@@ -42,5 +42,8 @@
 
         [JsonIgnore]
         public IRobotCommunication RobotCommunication { get; set; }
+
+        public new string ToString()
+            => $"X{AccelX:F1}Y{AccelY:F1}Z{AccelZ:F1}M{Compass:F0}D{Distance:F0}L{L:F0}R{R:F0}";
     }
 }

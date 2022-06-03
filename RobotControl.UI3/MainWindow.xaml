@@ -62,7 +62,7 @@
             </TabItem>
             <TabItem Header="Robot">
                 <StackPanel>
-                    <Label Content="Here you can check basic communication between computer and robot." />
+                    <ClassLibrary:RobotCommunicationControl x:Name="RobotCommunication" />
                 </StackPanel>
             </TabItem>
             <TabItem Header="Run">

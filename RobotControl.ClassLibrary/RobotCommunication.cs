@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-
+﻿
 using System;
 using System.IO;
 using System.IO.Ports;
@@ -10,72 +9,65 @@ namespace RobotControl.ClassLibrary
 {
     internal class RobotCommunication : IRobotCommunication
     {
+#if DEBUG
+        private const int ReadTimeOut = 1000;
+#else
         private const int ReadTimeOut = 200;
+#endif
+        private const int OpenTentatives = 4;
+
+        private const string SmartRobotId = "SmartRobot03";
         private readonly RobotCommunicationParameters parameters;
         private SerialPort serialPort = null;
-
+        
         private int LFromRobot = -1;
         private int RFromRobot = -1;
-        private string latestStringFromSerial = "";
-        private object serialLock = new object();
 
-        public RobotCommunication(RobotCommunicationParameters parameters)
-        {
-            this.parameters = parameters;
-        }
+        public RobotCommunication(RobotCommunicationParameters parameters) => this.parameters = parameters;
+
+        public string[] PortNames => SerialPort.GetPortNames();
 
         public void Start()
         {
             bool foundPort = false;
-            for (int i = 0; i < 4 && !foundPort; i++)
+            var ports = PortNames;
+            for (int i = 0; i < OpenTentatives && !foundPort; i++)
             {
-                for (int j = 1; j < 32 && !foundPort; j++)
+                if (OpenPort(parameters.COMPort))
                 {
-                    if (OpenPort(j))
-                    {
-                        System.Diagnostics.Debug.WriteLine($"-->RobotCommunication.StartAsync Opened port {j} <--");
-                        return;
-                    }
+                    System.Diagnostics.Debug.WriteLine($"-->RobotCommunication.StartAsync Opened port {parameters.COMPort} <--");
+                    return;
                 }
-
                 Thread.Sleep(100);
             }
 
             throw new Exception($"Cannot find SmartRobot04 COM port. Check if the robot is connected to a USB port. Check if Arduino IDE or other app is using the port. Aborting.");
         }
 
-        public RobotCommunicationResult Read()
+        public string Read()
         {
-            string json = string.Empty;
-            lock (serialLock)
+            for (int i = 0; i < OpenTentatives && serialPort.BytesToRead == 0; i++)
             {
-                json = latestStringFromSerial;
-                latestStringFromSerial = string.Empty;
+                Thread.Sleep(50);
             }
 
-            if (!string.IsNullOrEmpty(json))
+            if (serialPort.BytesToRead > 0)
             {
                 try
                 {
-                    var result = JsonConvert.DeserializeObject<RobotCommunicationResult>(json);
-                    // To compensate that the sensor is upside down...
-                    result.AccelX *= -1;
-                    result.AccelY *= -1;
-                    result.AccelZ *= -1;
-                    result.RobotCommunication = this;
-                    LFromRobot = (int)result.L;
-                    RFromRobot = (int)result.R;
+                    var result = serialPort.ReadLine();
                     return result;
                 }
-                catch (Exception)
-                {
-                    System.Diagnostics.Debug.WriteLine($"-->RobotCommunication.ReadAsync bad json, will try again: {json}");
-                }
+                catch (TimeoutException)
+                { }
+                catch (IOException)
+                { }
             }
-
-            System.Diagnostics.Debug.WriteLine($"-->RobotCommunication.ReadAsync could not get data, will return empty RobotCommunicationResult");
-
-            return new RobotCommunicationResult();
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("-->Read nothing to read...");
+            }
+            return string.Empty;
         }
 
         public void SetMotors(int l, int r)
@@ -89,9 +81,9 @@ namespace RobotControl.ClassLibrary
 
         public void Write(string s) => serialPort.WriteLine(s);
 
-        public void StopMotors() => Write($"{{'operation':'stop'}}");
+        public void StopMotors() => Write($"M0000");
 
-        public async Task<RobotCommunicationResult> ReadAsync() => await Task.Run(() => Read());
+        public async Task<string> ReadAsync() => await Task.Run(() => Read());
         public async Task SetMotorsAsync(int l, int r) => await Task.Run(() => SetMotors(l, r));
         public async Task StopMotorsAsync() => await Task.Run(() => StopMotors());
         public async Task StartAsync() => await Task.Run(() => Start());
@@ -105,47 +97,16 @@ namespace RobotControl.ClassLibrary
 
         private string toHex(int n) => $"{((n<0)?"-":"+")}{Math.Abs(n).ToString("0:X2")}";
 
-        private bool OpenPort(int portNumber)
+        private bool OpenPort(string portName)
         {
             ClosePortIfNeeded();
-
-            serialPort = new SerialPort($"COM{portNumber}", parameters.BaudRate);
+            
+            serialPort = new SerialPort(portName, parameters.BaudRate);
+            
             // this seems to be important for Arduino:
             serialPort.RtsEnable = true;
             serialPort.ReadTimeout = ReadTimeOut;
-            bool shouldContinueTryingToOpen = true;
-            for (var k = 0; !serialPort.IsOpen && k < 8 && shouldContinueTryingToOpen; k++)
-            {
-                try
-                {
-                    serialPort.Close();
-                    serialPort.Open();
-                    serialPort.ReadExisting();
-                    serialPort.WriteLine("{'operation':'id'}");
-                    Thread.Sleep(ReadTimeOut / 2);
-                    if (!ReadLineIfPossible().StartsWith("SmartRobot03"))
-                    {
-                        ClosePortIfNeeded();
-                        shouldContinueTryingToOpen = false;
-                        continue;
-                    }
-
-                    serialPort.DataReceived += OnSerialDataReceived;
-                    serialPort.WriteLine("{'operation':'constantreadsensors'}");
-                    shouldContinueTryingToOpen = false;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    System.Diagnostics.Debug.WriteLine("-->RobotCommunication.TryToOpenPort UnauthorizedAccessException, retrying");
-                    Thread.Sleep(100);
-                }
-                catch (FileNotFoundException)
-                {
-                    System.Diagnostics.Debug.WriteLine($"-->RobotCommunication.TryToOpenPort COM{portNumber} does not exist, next!");
-                    shouldContinueTryingToOpen = false;
-                }
-            }
-
+            serialPort.Open();
             return serialPort.IsOpen;
         }
 
@@ -156,26 +117,5 @@ namespace RobotControl.ClassLibrary
                 serialPort.Close();
             }
         }
-
-        private string ReadLineIfPossible()
-        {
-            try
-            {
-                return serialPort.ReadLine();
-            }
-            catch (TimeoutException) { }
-            catch (IOException) { }
-
-            return string.Empty;
-        }
-
-        private void OnSerialDataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            lock (serialLock)
-            {
-                latestStringFromSerial = ReadLineIfPossible();
-            }
-        }
-
     }
 }
