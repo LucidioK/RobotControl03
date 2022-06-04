@@ -60,6 +60,7 @@ namespace RobotControl.UI3
             {
                 CameraStartRecognition.Content = cameraButtonLabel;
                 Interlocked.Exchange(ref cameraContinue, 0);
+                SetMotor(this, 0, 0);
             }
             else
             {
@@ -75,59 +76,120 @@ namespace RobotControl.UI3
         private static void CameraWorkerProc(object? obj)
         {
             var thisWindow = obj as MainWindow;
-            string[] itemsToRecognize = Array.Empty<string>();
             while (thisWindow != null)
             {
                 if (CameraShouldContinue())
                 {
                     while (CameraShouldContinue())
                     {
-                        thisWindow.Dispatcher.Invoke(() =>
-                        {
-                            itemsToRecognize = thisWindow.CameraItemsToRecognizeList.ToArray();
-                            if (itemsToRecognize != null && itemsToRecognize.Length > 0)
-                            {
-                                thisWindow.ImageRecognition.LabelsToDetectText = string.Join(",", itemsToRecognize);
-                            }
-                        });
+                        string[] itemsToRecognize = GetItemsToRecognize(thisWindow);
 
                         var imageData = thisWindow.ImageRecognition.Get(itemsToRecognize);
-                            var objectPosition = imageData.XDeltaProportionFromBitmapCenter * 100;
-                            string positionText = "!!!";
-                            if (objectPosition < -5) // object is to the left
-                            {
-                                positionText = "<-";
-                            }
-                            else if (objectPosition > 5) // object is to the right
-                            {
-                                positionText = "->";
-                            }
-
-                        thisWindow.Dispatcher.Invoke(() =>
-                        {
-                            thisWindow.CameraStatusText.Text = positionText;
-                        });
+                        var objectPosition = imageData.XDeltaProportionFromBitmapCenter * 100;
+                        DisplayObjectPosition(thisWindow, objectPosition);
+                        MoveRobotAccordingToObjectPosition(thisWindow, imageData, objectPosition);
                     }
                 }
                 else
                 {
-                    thisWindow.Dispatcher.Invoke(() =>
-                    {
-                        var message = thisWindow.ImageRecognition.ImageRecognitionFromCameraInitialized ?
-                            (thisWindow.CameraStartRecognition.IsEnabled ? "Ready to Start Recognition " : "Please select what to find ")
-                            : "Waiting to initialize camera ";
-                        thisWindow.CameraStatusText.Text = $"{message} {DateTime.Now.ToLongTimeString()}";
-                    });
-                    Thread.Sleep(500);
+                    DisplayWaitingMessage(thisWindow);
                 }
             }
         }
 
-        private static bool CameraShouldContinue()
+        private static string[] GetItemsToRecognize(MainWindow? thisWindow)
         {
-            var shouldContinue = Interlocked.And(ref cameraContinue, 1);
-            return shouldContinue == 1;
+            string[] itemsToRecognize = Array.Empty<string>();
+            thisWindow?.Dispatcher.Invoke(() =>
+            {
+                itemsToRecognize = thisWindow.CameraItemsToRecognizeList.ToArray();
+                if (itemsToRecognize != null && itemsToRecognize.Length > 0)
+                {
+                    thisWindow.ImageRecognition.LabelsToDetectText = string.Join(",", itemsToRecognize);
+                }
+            });
+
+            return itemsToRecognize;
         }
+
+        private static void DisplayWaitingMessage(MainWindow? thisWindow)
+        {
+            thisWindow?.Dispatcher.Invoke(() =>
+            {
+                var message = thisWindow.ImageRecognition.ImageRecognitionFromCameraInitialized ?
+                    (thisWindow.CameraStartRecognition.IsEnabled ? "Ready to Start Recognition " : "Please select what to find ")
+                    : "Waiting to initialize camera ";
+                thisWindow.CameraStatusText.Text = $"{message} {DateTime.Now.ToLongTimeString()}";
+            });
+            Thread.Sleep(500);
+        }
+
+        private static void MoveRobotAccordingToObjectPosition(MainWindow thisWindow, ImageRecognitionFromCameraResult imageData, float objectPosition)
+        {
+            int L=0, R=0, T=0, SL=0, SR=0, ST=0;
+            thisWindow.Dispatcher.Invoke(() =>
+            {
+                L = int.Parse(thisWindow.LurchPower.Text);
+                R = int.Parse(thisWindow.LurchPower.Text);
+                T = int.Parse(thisWindow.LurchTime.Text);
+                SL = int.Parse(thisWindow.ScanLPower.Text);
+                SR = int.Parse(thisWindow.ScanRPower.Text);
+                ST = int.Parse(thisWindow.ScanTime.Text);
+            });
+
+            bool scanning = false;
+            if (objectPosition < -5 || !imageData.HasData) // object is to the left, or nothing found
+            {
+                L = -SL;
+                R = SR;
+                T = ST;
+                scanning = true;
+            }
+            else if (objectPosition > 5) // object is to the right
+            {
+                L = SL;
+                R = -SR;
+                T = ST;
+                scanning = true;
+            }
+
+            if (scanning && imageData.HasData)
+            {
+                T /= 2;
+            }
+
+            SetMotor(thisWindow, L, R);
+            Thread.Sleep(T);
+            SetMotor(thisWindow, 0, 0);
+            Thread.Sleep(150);
+        }
+
+        private static void SetMotor(MainWindow thisWindow, int L, int R) =>
+            thisWindow.Dispatcher.Invoke(() => thisWindow.RobotCommunication.Write($"M{ToHex(L)}{ToHex(R)}"));
+
+        private static string ToHex(int n) =>
+            $"{(n >= 0 ? "+" : "-")}{Math.Abs(n):X2}";
+
+        private static void DisplayObjectPosition(MainWindow? thisWindow, float objectPosition)
+        {
+            string positionText = "!!!";
+            if (objectPosition < -5) // object is to the left
+            {
+                positionText = "<-";
+            }
+            else if (objectPosition > 5) // object is to the right
+            {
+                positionText = "->";
+            }
+
+            thisWindow?.Dispatcher.Invoke(() =>
+            {
+                thisWindow.CameraStatusText.Text = positionText;
+            });
+        }
+
+        private static bool CameraShouldContinue() =>
+            Interlocked.And(ref cameraContinue, 1) == 1;
 
         private void CameraItemsToRecognize_RoutedEventHandler(object sender, RoutedEventArgs e)
         {
@@ -141,7 +203,7 @@ namespace RobotControl.UI3
                 }
             }
 
-            CameraStartRecognition.IsEnabled = labels.Any();
+            CameraStartRecognition.IsEnabled = labels.Any() && RobotCommunication.IsConnected;
             CameraItemsToRecognizeList = new ObservableCollection<string>(labels);
         }
     }

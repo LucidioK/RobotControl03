@@ -56,6 +56,7 @@ namespace RobotControl.ClassLibrary
 //            }
         }
 
+        public bool IsConnected => Send.IsEnabled;
         public string CommandText 
         { 
             get => commandText;
@@ -77,6 +78,13 @@ namespace RobotControl.ClassLibrary
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+        public string Write(string s)
+        {
+            robotCommunication.Write(s);
+            var result = robotCommunication.Read();
+            Result.Text = result.ToString();
+            return Result.Text;
+        }
 
         private async void Connect_ClickAsync(object sender, RoutedEventArgs e)
         {
@@ -94,13 +102,7 @@ namespace RobotControl.ClassLibrary
             Send.IsEnabled = true;
         }
 
-        private void Send_Click(object sender, RoutedEventArgs e)
-        {
-            robotCommunication.Write(Command.Text);
-            Thread.Sleep(200);
-            var result = robotCommunication.Read();
-            Result.Text = result.ToString();
-        }
+        private void Send_Click(object sender, RoutedEventArgs e) => Write(Command.Text);
 
         private void BaudRateComboBoxChanged(object sender, SelectionChangedEventArgs e) { }
 
