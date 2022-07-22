@@ -68,7 +68,53 @@
             </TabItem>
             <TabItem Header="Calibration">
                 <StackPanel>
-                    <Label Content="Here you can calibrate robot parameters." />
+                    <Label Content="NOT YET FINISHED!" FontFamily="Consolas" FontSize="24" Foreground="Red" FontWeight="Bold"/>
+                    <Label Content="NOT YET FINISHED!" FontFamily="Consolas" FontSize="24" Foreground="Red" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Select terrain" Width="180" FontFamily="Consolas"/>
+                        <ComboBox x:Name="CalibrationTerrain" Width="100" Height="15"  FontFamily="Consolas"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Turn power" Width="180" FontFamily="Consolas"/>
+                        <TextBox x:Name="CalibrationTurnPower" Width="30" Height="15"  Text="220" FontFamily="Consolas"/>
+                        <Button x:Name="CalibrationTurnPowerExperiment" Height="18" Content="Run Experiment" Click="CalibrationTurnPowerExperiment_Click" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Move ahead power" Width="180" FontFamily="Consolas"/>
+                        <TextBox x:Name="CalibrationMoveAheadPower" Width="30" Height="15" Text="250" FontFamily="Consolas"/>
+                        <Button x:Name="CalibrationMoveAheadPowerExperiment" Height="18" Content="Run Experiment" Click="CalibrationMoveAheadPowerExperiment_Click" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Move back power"   Width="180" FontFamily="Consolas"/>
+                        <TextBox x:Name="CalibrationMoveBackPower" Width="30" Height="15" Text="-250" FontFamily="Consolas"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Lurch power"  Width="180" FontFamily="Consolas"/>
+                        <TextBox x:Name="CalibrationLurchPower" Width="30" Height="15" Text="255" FontFamily="Consolas"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Left Power Multiplier"  Width="180" FontFamily="Consolas"/>
+                        <TextBox x:Name="CalibrationLMultiplier" Width="30" Height="15" Text="1.0" FontFamily="Consolas"/>
+                        <Button x:Name="CalibrationLMultiplierExperiment" Height="18" Content="Run Experiment" Click="CalibrationLMultiplierExperiment_Click" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Right Power Multiplier"  Width="180" FontFamily="Consolas"/>
+                        <TextBox x:Name="CalibrationRMultiplier" Width="30" Height="15" Text="1.0" FontFamily="Consolas"/>
+                    </StackPanel>
+
+                    <Label Content=" "  Width="180" FontFamily="Consolas"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Latitude"  Width="72" FontFamily="Consolas"/>
+                        <TextBox x:Name="CalibrationLatitude" Width="72" Height="15" Text="47.7542651" FontFamily="Consolas"/>
+                        <Label Content="Longitude"  Width="72" FontFamily="Consolas"/>
+                        <TextBox x:Name="CalibrationLongitude" Width="72" Height="15" Text="-122.1634582" FontFamily="Consolas"/>                    
+                    </StackPanel>
+                    <Button x:Name="CalibrationGetCompassDeclination" Height="18" Content="Get Compass Declination" Click="CalibrationGetCompassDeclination_Click" />
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Compass declination angle"  Width="180" FontFamily="Consolas"/>
+                        <TextBox x:Name="CalibrationDeclinationAngle" Width="30" Height="15" Text="15" FontFamily="Consolas"/>
+                    </StackPanel>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Initialization">

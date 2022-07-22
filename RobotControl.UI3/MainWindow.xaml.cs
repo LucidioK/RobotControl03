@@ -7,7 +7,9 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -205,6 +207,49 @@ namespace RobotControl.UI3
 
             CameraStartRecognition.IsEnabled = labels.Any() && RobotCommunication.IsConnected;
             CameraItemsToRecognizeList = new ObservableCollection<string>(labels);
+        }
+
+        private async void CalibrationGetCompassDeclination_Click(object sender, RoutedEventArgs e)
+        {
+            float lat,lon;
+            if (float.TryParse(CalibrationLatitude.Text, out lat) && float.TryParse(CalibrationLongitude.Text, out lon))
+            {
+                var year     = DateTime.Now.Year;
+                var month    = DateTime.Now.Month;
+                var day      = DateTime.Now.Day;
+                var NS       = lat > 0 ? "N" : "S";
+                var EW       = lon > 0 ? "E" : "W";
+                lat          = Math.Abs(lat);
+                lon          = Math.Abs(lon);
+
+                var url      = $"https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?browserRequest=true&magneticComponent=d&key=EAU2y&lat1={lat}&lat1Hemisphere={NS}&lon1={lon}&lon1Hemisphere={EW}&model=WMM&startYear={year}&startMonth={month}&startDay={day}&resultFormat=json";
+                var client   = new HttpClient();
+                var request  = new HttpRequestMessage(HttpMethod.Get, url);
+                var response = await client.SendAsync(request);
+                var content  = await response.Content.ReadAsStringAsync();
+                var regex    = new Regex(@"""declination"":\s*(\-?[0-9]+\.[0-9]+)");
+                var match    = regex.Match(content);
+                CalibrationDeclinationAngle.Text = match.Captures[1].Value;
+            }
+            else
+            {
+                _ = MessageBox.Show("Invalid Latitude or Longitude value.", "Attention", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void CalibrationTurnPowerExperiment_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void CalibrationMoveAheadPowerExperiment_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void CalibrationLMultiplierExperiment_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

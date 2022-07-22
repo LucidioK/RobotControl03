@@ -1,0 +1,76 @@
+{
+	"Environments":[
+		{
+			"Name": "Thick Carpet",
+			"TurnPower": 220,
+			"MoveAheadPower": 220,
+			"MoveBackPower": 220,
+			"LurchPower": 250,
+			"LMultiplier": 1.0,
+			"RMultiplier": 1.0
+		},
+		{
+			"Name": "Thin Carpet",
+			"TurnPower": 220,
+			"MoveAheadPower": 220,
+			"MoveBackPower": 220,
+			"LurchPower": 250,
+			"LMultiplier": 1.0,
+			"RMultiplier": 1.0
+		},
+		{
+			"Name": "Hard Floor",
+			"TurnPower": 220,
+			"MoveAheadPower": 220,
+			"MoveBackPower": 220,
+			"LurchPower": 250,
+			"LMultiplier": 1.0,
+			"RMultiplier": 1.0
+		},
+		{
+			"Name": "Thick Grass",
+			"TurnPower": 220,
+			"MoveAheadPower": 220,
+			"MoveBackPower": 220,
+			"LurchPower": 250,
+			"LMultiplier": 1.0,
+			"RMultiplier": 1.0
+		},
+		{
+			"Name": "Thin Grass",
+			"TurnPower": 220,
+			"MoveAheadPower": 220,
+			"MoveBackPower": 220,
+			"LurchPower": 250,
+			"LMultiplier": 1.0,
+			"RMultiplier": 1.0
+		},
+		{
+			"Name": "Gravel",
+			"TurnPower": 220,
+			"MoveAheadPower": 220,
+			"MoveBackPower": 220,
+			"LurchPower": 250,
+			"LMultiplier": 1.0,
+			"RMultiplier": 1.0
+		},
+		{
+			"Name": "Dirt",
+			"TurnPower": 220,
+			"MoveAheadPower": 220,
+			"MoveBackPower": 220,
+			"LurchPower": 250,
+			"LMultiplier": 1.0,
+			"RMultiplier": 1.0
+		}
+	],
+	"CompassCalibrationMatrix":[
+		{
+			"Latitude": 47.7542651,
+			"Longitude": -122.1634582,
+			"DeclinationAngle": 15.3828,
+			"Minimums": [-30,-70,-759],
+			"Maximums": [18,-13,-715]
+		}
+	]
+}
