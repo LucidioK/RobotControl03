@@ -3,6 +3,9 @@ Simple robot control with Arduino and C#.
 
 This is a robot that detects objects via AI, then rotates towards the object and charges towards the object.
 
+Here's a video showing it trying to find a bottle, then charging:
+https://1drv.ms/v/s!AvfQ-3ihexuLxtBvqYqCb8fvBgffRg?e=5s4wt4
+
 ![Robot02](https://user-images.githubusercontent.com/1053501/167752068-96307dea-36e6-46ed-a36d-6fc3354e860e.jpg) ![Robot03](https://user-images.githubusercontent.com/1053501/167752089-615b9807-a7fa-40a2-a886-9ea1e767858d.jpg)
 
 Here is the physical diagram:
