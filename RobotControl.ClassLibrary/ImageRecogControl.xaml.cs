@@ -84,6 +84,7 @@ namespace RobotControl.ClassLibrary
             {
                 ImageRecognitionFromCamera = irfc;
                 ImageRecognitionFromCameraInitialized = true;
+                Status.Text = "";
             });
         }
 
@@ -123,6 +124,8 @@ namespace RobotControl.ClassLibrary
                     Thread.Sleep(500);
                 }
             }
+
+            Dispatcher.Invoke(() => Status.Text = "");
         }
     }
 }

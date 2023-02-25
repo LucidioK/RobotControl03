@@ -41,26 +41,6 @@ namespace RobotControl.ClassLibrary
             }
         }
 
-        public static readonly DependencyProperty LabelsToDetectTextProperty = DependencyProperty.Register(
-                                                         name: "LabelsToDetectText",
-                                                         propertyType: typeof(string),
-                                                         ownerType: typeof(ImageRecogSyncControl),
-                                                         typeMetadata: new PropertyMetadata(
-                                                         new PropertyChangedCallback(LabelsToDetectTextPropertyChanged)));
-
-        private static void LabelsToDetectTextPropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e) =>
-            ((ImageRecogSyncControl)sender).LabelsToDetectText = (string)e.NewValue;
-
-        public string LabelsToDetectText
-        {
-            get => labelsToDetectText;
-            set
-            {
-                labelsToDetectText = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LabelsToDetectText)));
-            }
-        }
-
         public IImageRecognitionFromCamera ImageRecognitionFromCamera { get; protected set; }
 
         public ImageRecogSyncControl()
@@ -82,48 +62,53 @@ namespace RobotControl.ClassLibrary
 
         protected virtual void InitializeImageRecognitionFromCameraProc(object obj)
         {
-            Dispatcher.Invoke(() => Status.Text = "Initializing Image Recognition.");
+            Dispatcher.InvokeAsync(() => Status.Text = "Initializing Image Recognition.");
             var irfc = ClassFactory.CreateImageRecognitionFromCamera();
-            Dispatcher.Invoke(() =>
+            Dispatcher.InvokeAsync(() =>
             {
                 ImageRecognitionFromCamera = irfc;
                 ImageRecognitionFromCameraInitialized = true;
+                Status.Text = "";
             });
         }
 
         public ImageRecognitionFromCameraResult Get(string[] labels)
         {
-            WaitUntilImageRegognitionFromCameraIsInitialized();
+            WaitUntilImageRecognitionFromCameraIsInitialized();
             ImageRecognitionFromCameraResult imageData = new ImageRecognitionFromCameraResult();
 
             var start = DateTime.Now;
             Dispatcher.Invoke(() =>
             {
                 imageData = ImageRecognitionFromCamera.Get(labels);
-                using (var gr = Graphics.FromImage(imageData.Bitmap))
-                {
-                    gr.DrawRectangle(new System.Drawing.Pen(System.Drawing.Color.Yellow, 10), 5, 5, imageData.Bitmap.Width - 5, imageData.Bitmap.Height - 5);
-                }
+                //using (var gr = Graphics.FromImage(imageData.Bitmap))
+                //{
+                //    gr.DrawRectangle(new System.Drawing.Pen(System.Drawing.Color.Yellow, 10), 5, 5, imageData.Bitmap.Width - 5, imageData.Bitmap.Height - 5);
+                //}
                 Image.Source = ImageRecognitionFromCameraUtilities.BitmapToBitmapImage(imageData.Bitmap);
-                Status.Text = $"{(DateTime.Now - start).TotalMilliseconds}ms";
+                Status.Text = $"{(int)(DateTime.Now - start).TotalMilliseconds}ms -{imageData.Label}-";
             });
 
             return imageData;
         }
 
-        private void WaitUntilImageRegognitionFromCameraIsInitialized()
+        private void WaitUntilImageRecognitionFromCameraIsInitialized()
         {
+            if (ImageRecognitionFromCameraInitialized)
+            {
+                return;
+            }
             var start = DateTime.Now;
-
             for (bool imageRecognitionFromCameraInitialized = false; !imageRecognitionFromCameraInitialized;)
             {
-                Dispatcher.Invoke(() => imageRecognitionFromCameraInitialized = ImageRecognitionFromCameraInitialized);
+                Dispatcher.InvokeAsync(() => imageRecognitionFromCameraInitialized = ImageRecognitionFromCameraInitialized);
                 if (!imageRecognitionFromCameraInitialized)
                 {
-                    Dispatcher.Invoke(() => Status.Text = $"Initializing Image Recognition for {(DateTime.Now - start).TotalSeconds} seconds.");
+                    Dispatcher.InvokeAsync(() => Status.Text = $"Initializing Image Recognition for {(DateTime.Now - start).TotalSeconds} seconds.");
                     Thread.Sleep(500);
                 }
             }
+            Dispatcher.InvokeAsync(() => Status.Text = "");
         }
     }
 }

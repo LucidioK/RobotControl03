@@ -10,8 +10,7 @@
     <PackageReference Include="Microsoft.ML" Version="1.7.1" />
     <PackageReference Include="Microsoft.ML.CpuMath" Version="1.7.1" />
     <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="1.7.1" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.11.0" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.11.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.11.0" />
     <PackageReference Include="Microsoft.ML.OnnxTransformer" Version="1.7.1" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

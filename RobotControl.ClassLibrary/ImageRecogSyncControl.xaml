@@ -16,18 +16,6 @@
                 <Label Content="Status:" />
                 <TextBlock Name="Status" Margin="5,5,5,5" Text="." />
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Labels to Detect:" />
-                <TextBlock Name="LabelsToDetect" Margin="5,5,5,5" Text="." />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Found Labels:" />
-                <TextBlock Name="FoundLabels" Margin="5,5,5,5" Text="." />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Coordinates TLBR:" />
-                <TextBlock Name="Coordinates" Margin="5,5,5,5" Text="0,0,0,0" />
-            </StackPanel>
         </StackPanel>
 
     </Grid>

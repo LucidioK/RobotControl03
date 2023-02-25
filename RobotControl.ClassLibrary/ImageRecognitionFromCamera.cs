@@ -85,12 +85,12 @@ namespace RobotControl.ClassLibrary
 
             var highestConfidence = filteredBoxes.Select(b => b.Confidence).Max();
             var highestConfidenceBox = filteredBoxes.First(b => b.Confidence == highestConfidence);
-            HighlightDetectedObject(result.Bitmap, highestConfidenceBox);
             var bbdfb = BoundingBoxDeltaFromBitmap.FromBitmap(result.Bitmap, highestConfidenceBox);
+            var dimensions = HighlightDetectedObject(result.Bitmap, highestConfidenceBox, bbdfb);
             result.HasData = true;
 
             result.XDeltaProportionFromBitmapCenter = bbdfb.XDeltaProportionFromBitmapCenter;
-            result.Label = highestConfidenceBox.Label;
+            result.Label = dimensions + $", label={highestConfidenceBox.Label}";
 
             return result;
         }
@@ -103,10 +103,8 @@ namespace RobotControl.ClassLibrary
             tinyYoloPredictionEngine?.Dispose();
         }
 
-        private static void HighlightDetectedObject(Bitmap bitmap, BoundingBox box)
+        private static string HighlightDetectedObject(Bitmap bitmap, BoundingBox box, BoundingBoxDeltaFromBitmap bbdfb)
         {
-            var bbdfb = BoundingBoxDeltaFromBitmap.FromBitmap(bitmap, box);
-
             var x = box.Dimensions.X * bbdfb.CorrX;
             var y = box.Dimensions.Y * bbdfb.CorrY;
             var w = box.Dimensions.Width * bbdfb.CorrX;
@@ -122,6 +120,7 @@ namespace RobotControl.ClassLibrary
                     gr.DrawLine(new Pen(Color.Green, 2), midX, 0, midX, bitmap.Height - 1);
                 }
             }
+            return $"x:{(int)x}, y:{(int)y}, w:{(int)w}, h:{(int)h}";
         }
 
         #region ONNXImplementation
@@ -239,9 +238,9 @@ namespace RobotControl.ClassLibrary
                         .Append(mlContext.Transforms.ApplyOnnxModel(
                             modelFile: onnxModel.ModelPath,
                             outputColumnName: onnxModel.ModelOutput,
-                            inputColumnName: onnxModel.ModelInput/*,
+                            inputColumnName: onnxModel.ModelInput,
                             gpuDeviceId: 0,
-                            fallbackToCpu: true*/))
+                            fallbackToCpu: true))
                         .Fit(
 
                             mlContext.Data.LoadFromEnumerable(new List<ImageInputData>()));

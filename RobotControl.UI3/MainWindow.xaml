@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RobotControl.UI3"
         xmlns:ClassLibrary="clr-namespace:RobotControl.ClassLibrary;assembly=RobotControl.ClassLibrary" 
+        d:DataContext="{d:DesignInstance Type=local:RobotControlData}"
         mc:Ignorable="d"
-        DataContext="{Binding ElementName=MainWindow}"
         Title="Robot Control" Height="680" Width="360" ResizeMode="CanMinimize">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -41,20 +41,20 @@
                     </ComboBox>
                     <StackPanel Orientation="Horizontal">
                         <Label Content="ScanL" FontFamily="Consolas"/>
-                        <TextBox x:Name="ScanLPower" Width="30" Height="15"  Text="220" FontFamily="Consolas"/>
+                        <TextBox x:Name="ScanLPower" Width="30" Height="15"  Text="{Binding ScanLPowerValue}" FontFamily="Consolas"/>
                         <Label Content="ScanR"  FontFamily="Consolas"/>
-                        <TextBox x:Name="ScanRPower" Width="30" Height="15" Text="220" FontFamily="Consolas"/>
+                        <TextBox x:Name="ScanRPower" Width="30" Height="15" Text="{Binding ScanRPowerValue}" FontFamily="Consolas"/>
                         <Label Content="ScanTime" FontFamily="Consolas"/>
-                        <TextBox x:Name="ScanTime" Width="30" Height="15" Text="350" FontFamily="Consolas"/>
+                        <TextBox x:Name="ScanTime" Width="30" Height="15" Text="{Binding ScanTimeValue}" FontFamily="Consolas"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Lurch"  FontFamily="Consolas"/>
-                        <TextBox x:Name="LurchPower" Width="30" Height="15" Text="250" FontFamily="Consolas"/>
+                        <TextBox x:Name="LurchPower" Width="30" Height="15" Text="{Binding LurchPowerValue}" FontFamily="Consolas"  />
                         <Label Content="LurchTime"  FontFamily="Consolas"/>
-                        <TextBox x:Name="LurchTime" Width="40" Height="15" Text="1500" FontFamily="Consolas"/>
+                        <TextBox x:Name="LurchTime" Width="40" Height="15" Text="{Binding LurchTimeValue}" FontFamily="Consolas"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock x:Name="CameraStatusText" Text="." HorizontalAlignment="Left" Height="26" Width="240" VerticalAlignment="Center" FontFamily="Consolas"/>
+                        <TextBlock x:Name="CameraStatusText" Text="{Binding CameraStatus}" HorizontalAlignment="Left" Height="26" Width="240" VerticalAlignment="Center" FontFamily="Consolas"/>
                         <Button x:Name="CameraStartRecognition" Content="Start" Click="CameraStartRecognition_Click" IsEnabled="False" FontFamily="Consolas" HorizontalAlignment="Right" />
                     </StackPanel>
                     <ClassLibrary:ImageRecogSyncControl x:Name="ImageRecognition" />

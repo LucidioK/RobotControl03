@@ -18,6 +18,19 @@ Folder RobotControl.ClassLibrary has the AI and PC/Robot Communication.
 Folder RobotControl.UI has the UI.
 
 ## How to build
+### For the C# part
 For the C# part, that runs on the PC, open RobotControl02.sln on Visual Studio then build.
-For the Arduino part, start the Arduino IDE and load the file SmartRobot02.ino from folder SmartRobot02.
+
+### For the Arduino part
+You should first install the libraries that are used:
+
+1. Open Arduino, then open the Library Manager (Tools/Manage Libraries, or Ctrl+Shift+I)
+   1. Search and install these libraries:
+      * Adafruit LSM303DLH Mag
+      * VL53L0X Pololu
+      * L298N Andrea
+      * Adafruit LSM303 Accel
+1. Open the file SmartRobot02.ino from folder SmartRobot02, compile and upload to your robot.
+
+
 

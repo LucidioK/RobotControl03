@@ -3,57 +3,38 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 
 namespace RobotControl.UI3
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
+        protected object motorLock = new object();
+        private RobotControlData robotControlData;
         public ImageRecognitionFromCameraUtilities utilities;
         protected Thread cameraWorkerThread;
         public MainWindow() : base()
         {
             InitializeComponent();
+            robotControlData = new RobotControlData();
+            robotControlData.InitializeWithJSONIfExists();
+            DataContext = robotControlData;
             utilities = new ImageRecognitionFromCameraUtilities();
             ImageRecognition.Start();
         }
 
+
+
         private static int cameraContinue = 0;
         private string cameraButtonLabel = "";
-
-        private ObservableCollection<string> cameraItemsToRecognizeList = new();
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        public ObservableCollection<string> CameraItemsToRecognizeList
-        { 
-            get => cameraItemsToRecognizeList;
-            set
-            {
-                cameraItemsToRecognizeList = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraItemsToRecognizeList)));
-            }
-        }
 
         private void CameraStartRecognition_Click(object sender, RoutedEventArgs e)
         {
@@ -99,45 +80,28 @@ namespace RobotControl.UI3
             }
         }
 
-        private static string[] GetItemsToRecognize(MainWindow? thisWindow)
-        {
-            string[] itemsToRecognize = Array.Empty<string>();
-            thisWindow?.Dispatcher.Invoke(() =>
-            {
-                itemsToRecognize = thisWindow.CameraItemsToRecognizeList.ToArray();
-                if (itemsToRecognize != null && itemsToRecognize.Length > 0)
-                {
-                    thisWindow.ImageRecognition.LabelsToDetectText = string.Join(",", itemsToRecognize);
-                }
-            });
-
-            return itemsToRecognize;
-        }
+        private static string[] GetItemsToRecognize(MainWindow? thisWindow) => thisWindow == null ? new string[] { } : thisWindow.robotControlData.CameraItemsToRecognizeList.ToArray();
 
         private static void DisplayWaitingMessage(MainWindow? thisWindow)
         {
-            thisWindow?.Dispatcher.Invoke(() =>
+            if (thisWindow != null)
             {
                 var message = thisWindow.ImageRecognition.ImageRecognitionFromCameraInitialized ?
                     (thisWindow.CameraStartRecognition.IsEnabled ? "Ready to Start Recognition " : "Please select what to find ")
                     : "Waiting to initialize camera ";
-                thisWindow.CameraStatusText.Text = $"{message} {DateTime.Now.ToLongTimeString()}";
-            });
-            Thread.Sleep(500);
+                thisWindow.robotControlData.CameraStatus = $"{message} {DateTime.Now.ToLongTimeString()}";
+                Thread.Sleep(500);
+            }
         }
 
         private static void MoveRobotAccordingToObjectPosition(MainWindow thisWindow, ImageRecognitionFromCameraResult imageData, float objectPosition)
         {
-            int L=0, R=0, T=0, SL=0, SR=0, ST=0;
-            thisWindow.Dispatcher.Invoke(() =>
-            {
-                L = int.Parse(thisWindow.LurchPower.Text);
-                R = int.Parse(thisWindow.LurchPower.Text);
-                T = int.Parse(thisWindow.LurchTime.Text);
-                SL = int.Parse(thisWindow.ScanLPower.Text);
-                SR = int.Parse(thisWindow.ScanRPower.Text);
-                ST = int.Parse(thisWindow.ScanTime.Text);
-            });
+            int L  = thisWindow.robotControlData.LurchPowerValue, 
+                R  = thisWindow.robotControlData.LurchPowerValue, 
+                T  = thisWindow.robotControlData.LurchTimeValue, 
+                SL = thisWindow.robotControlData.ScanLPowerValue, 
+                SR = thisWindow.robotControlData.ScanRPowerValue, 
+                ST = thisWindow.robotControlData.ScanTimeValue;
 
             bool scanning = false;
             if (objectPosition < -5 || !imageData.HasData) // object is to the left, or nothing found
@@ -163,7 +127,6 @@ namespace RobotControl.UI3
             SetMotor(thisWindow, L, R);
             Thread.Sleep(T);
             SetMotor(thisWindow, 0, 0);
-            Thread.Sleep(150);
         }
 
         private static void SetMotor(MainWindow thisWindow, int L, int R) =>
@@ -174,20 +137,17 @@ namespace RobotControl.UI3
 
         private static void DisplayObjectPosition(MainWindow? thisWindow, float objectPosition)
         {
-            string positionText = "!!!";
+            string positionText = ((int)objectPosition).ToString();
             if (objectPosition < -5) // object is to the left
             {
-                positionText = "<-";
+                positionText += " <-";
             }
             else if (objectPosition > 5) // object is to the right
             {
-                positionText = "->";
+                positionText += " ->";
             }
-
-            thisWindow?.Dispatcher.Invoke(() =>
-            {
-                thisWindow.CameraStatusText.Text = positionText;
-            });
+            if (thisWindow != null)
+                thisWindow.robotControlData.CameraStatus = positionText;
         }
 
         private static bool CameraShouldContinue() =>
@@ -206,7 +166,7 @@ namespace RobotControl.UI3
             }
 
             CameraStartRecognition.IsEnabled = labels.Any() && RobotCommunication.IsConnected;
-            CameraItemsToRecognizeList = new ObservableCollection<string>(labels);
+            robotControlData.CameraItemsToRecognizeList = new ObservableCollection<string>(labels);
         }
 
         private async void CalibrationGetCompassDeclination_Click(object sender, RoutedEventArgs e)
