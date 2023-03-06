@@ -42,9 +42,9 @@
                     <StackPanel Orientation="Horizontal">
                         <Label Content="ScanL" FontFamily="Consolas"/>
                         <TextBox x:Name="ScanLPower" Width="30" Height="15"  Text="{Binding ScanLPowerValue}" FontFamily="Consolas"/>
-                        <Label Content="ScanR"  FontFamily="Consolas"/>
-                        <TextBox x:Name="ScanRPower" Width="30" Height="15" Text="{Binding ScanRPowerValue}" FontFamily="Consolas"/>
-                        <Label Content="ScanTime" FontFamily="Consolas"/>
+                        <Label Content="ScanR"  FontFamily="Consolas" Width="70"/>
+                        <TextBox x:Name="ScanRPower" Width="39" Height="15" Text="{Binding ScanRPowerValue}" FontFamily="Consolas"/>
+                        <Label Content="ScanTime" FontFamily="Consolas" Width="65"/>
                         <TextBox x:Name="ScanTime" Width="30" Height="15" Text="{Binding ScanTimeValue}" FontFamily="Consolas"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
@@ -52,6 +52,34 @@
                         <TextBox x:Name="LurchPower" Width="30" Height="15" Text="{Binding LurchPowerValue}" FontFamily="Consolas"  />
                         <Label Content="LurchTime"  FontFamily="Consolas"/>
                         <TextBox x:Name="LurchTime" Width="40" Height="15" Text="{Binding LurchTimeValue}" FontFamily="Consolas"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical">
+                        <Label Content="Camera Id (numeric), URL, or file name:" />
+                        <TextBox x:Name="CameraId" Text="{Binding CameraIdValue}" Height="26" VerticalAlignment="Center" FontFamily="Consolas" Width="354">
+                            <TextBox.ToolTip>
+                                <TextBlock>
+                                    Examples:
+                                    <LineBreak/>
+                                    For a physical camera on your computer, just enter the camera number.
+                                    <LineBreak/>
+                                    Normally 0 is the front camera, 1 is the back camera (if exists).
+                                    <LineBreak/>
+                                    For IP camera, enter the URL. You will need to research with the
+                                    <LineBreak/>
+                                    camera manufacturer, but usually RTSP is the best protocol. Then, the
+                                    <LineBreak/>
+                                    URL would be something like:
+                                    <LineBreak/>
+                                    "rtsp://USERNAME:PASSWORD@IPADDRESS:PORT/SOMEOTHERPARAMS"
+                                    <LineBreak/>
+                                    Such as:
+                                    <LineBreak/>
+                                    rtsp%3A%2F%2Fadmin%3Amumuzinho%4010.0.0.67%3A554%2Fcam%2Frealmonitor%3Fchannel%3D1%26subtype%3D0%26authbasic%3D64
+                                    <LineBreak/>
+                                    For file, enter the full movie file path.
+                                </TextBlock>
+                            </TextBox.ToolTip>
+                        </TextBox>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock x:Name="CameraStatusText" Text="{Binding CameraStatus}" HorizontalAlignment="Left" Height="26" Width="240" VerticalAlignment="Center" FontFamily="Consolas"/>

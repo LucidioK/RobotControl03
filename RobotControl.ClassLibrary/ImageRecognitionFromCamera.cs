@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RobotControl.ClassLibrary
@@ -23,6 +24,8 @@ namespace RobotControl.ClassLibrary
         private PredictionEngine<ImageInputData, TinyYoloPrediction> tinyYoloPredictionEngine;
         private VideoCapture videoCapture;
         private bool flipY;
+        private Thread eatUpFramesThread;
+        private object eatUpFramesThreadLock = new object();
 
         public ImageRecognitionFromCamera()
         {
@@ -32,16 +35,39 @@ namespace RobotControl.ClassLibrary
             {
                 throw new FileNotFoundException($"Could not find any onnx file in the current folder {Directory.GetCurrentDirectory()}");
             }
-
             tinyYoloModel            = new TinyYoloModel(onnxFilePath);
             onnxModelConfigurator    = new OnnxModelConfigurator(tinyYoloModel);
             onnxOutputParser         = new OnnxOutputParser(tinyYoloModel);
             tinyYoloPredictionEngine = onnxModelConfigurator.GetMlNetPredictionEngine<TinyYoloPrediction>();
-            videoCapture             = new VideoCapture(0);
-            if (!videoCapture.Open(0))
+
+        }
+
+        public bool Open(string cameraId)
+        {
+            var opened = false;
+            if (cameraId.All(c => c >= '0' && c <= '9'))
             {
-                throw new ArgumentException($"Could not open camera 0 (default camera)");
+                var intId    = int.Parse(cameraId);
+                videoCapture = new VideoCapture(intId);
+                opened       = videoCapture.Open(intId);
             }
+            else
+            {
+                videoCapture = new VideoCapture(cameraId, VideoCaptureAPIs.FFMPEG);
+                opened = videoCapture.Open(cameraId, VideoCaptureAPIs.FFMPEG);
+                if (opened)
+                {
+                    eatUpFramesThread = new Thread(eatUpFramesThreadProc);
+                    eatUpFramesThread.Start();
+                }
+            }
+
+            if (!opened)
+            {
+                throw new ArgumentException($"Could not open camera {cameraId}");
+            }
+
+            return opened;
         }
 
         public ImageRecognitionFromCameraResult Get(string[] labelsOfObjectsToDetect)
@@ -53,15 +79,12 @@ namespace RobotControl.ClassLibrary
                 ImageRecognitionFromCamera = this,
             };
 
-            for (int i = 0; i < 8 && frame.Rows <= 0; i++)
+            lock (eatUpFramesThreadLock)
             {
-                if (videoCapture.Read(frame))
-                {
-                    break;
-                }
+                frame = videoCapture.RetrieveMat();
             }
 
-            if (frame.Rows <= 0)
+            if (frame.Empty())
             {
                 return result;
             }
@@ -122,6 +145,25 @@ namespace RobotControl.ClassLibrary
             }
             return $"x:{(int)x}, y:{(int)y}, w:{(int)w}, h:{(int)h}";
         }
+
+        private void eatUpFramesThreadProc(object obj)
+        {
+            var fps = videoCapture.Get(VideoCaptureProperties.Fps);
+            var wait = (int)(1000 / fps);
+            var grabbed = false;
+            while (true)
+            {
+                lock (eatUpFramesThreadLock)
+                {
+                    videoCapture.Grab();
+                }
+                if (!grabbed)
+                {
+                    Thread.Sleep(wait / 2);
+                }
+            }
+        }
+
 
         #region ONNXImplementation
         public class BoundingBoxDimensions

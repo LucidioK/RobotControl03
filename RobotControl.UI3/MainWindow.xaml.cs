@@ -47,6 +47,7 @@ namespace RobotControl.UI3
             }
             else
             {
+                ImageRecognition.ImageRecognitionFromCamera.Open(robotControlData.CameraIdValue);
                 cameraWorkerThread = new Thread(CameraWorkerProc) { Priority = ThreadPriority.AboveNormal };
                 cameraWorkerThread.Start(this);
 

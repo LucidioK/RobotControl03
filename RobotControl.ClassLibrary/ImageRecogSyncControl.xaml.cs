@@ -81,10 +81,6 @@ namespace RobotControl.ClassLibrary
             Dispatcher.Invoke(() =>
             {
                 imageData = ImageRecognitionFromCamera.Get(labels);
-                //using (var gr = Graphics.FromImage(imageData.Bitmap))
-                //{
-                //    gr.DrawRectangle(new System.Drawing.Pen(System.Drawing.Color.Yellow, 10), 5, 5, imageData.Bitmap.Width - 5, imageData.Bitmap.Height - 5);
-                //}
                 Image.Source = ImageRecognitionFromCameraUtilities.BitmapToBitmapImage(imageData.Bitmap);
                 Status.Text = $"{(int)(DateTime.Now - start).TotalMilliseconds}ms -{imageData.Label}-";
             });

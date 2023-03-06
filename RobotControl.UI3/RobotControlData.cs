@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,13 +14,16 @@ namespace RobotControl.UI3
 {
     internal class RobotControlData : INotifyPropertyChanged
     {
-        private int lurchTimeValue  = 1000;
-        private int scanRPowerValue = 220;
-        private int scanLPowerValue = 220;
-        private int scanTimeValue   = 100;
-        private int lurchPowerValue = 250;
+        private int lurchTimeValue       = 1000;
+        private int scanRPowerValue      = 220;
+        private int scanLPowerValue      = 220;
+        private int scanTimeValue        = 100;
+        private int lurchPowerValue      = 250;
+        private int framesPerSecondValue = 30;
+
+        private string cameraIdValue          = "0";
         private string jsonFilePath;
-        private string cameraStatus;
+        private string cameraStatus      = "";
 
         public RobotControlData()
         {
@@ -48,11 +52,14 @@ namespace RobotControl.UI3
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        public int LurchPowerValue { get => lurchPowerValue; set { lurchPowerValue = value; PropChgd(nameof(lurchPowerValue)); } }
-        public int ScanRPowerValue { get => scanRPowerValue; set { scanRPowerValue = value; PropChgd(nameof(scanRPowerValue)); } }
-        public int ScanLPowerValue { get => scanLPowerValue; set { scanLPowerValue = value; PropChgd(nameof(scanLPowerValue)); } }
-        public int ScanTimeValue   { get => scanTimeValue;   set { scanTimeValue   = value; PropChgd(nameof(scanTimeValue));   } }
-        public int LurchTimeValue  { get => lurchTimeValue;  set { lurchTimeValue  = value; PropChgd(nameof(lurchTimeValue));  } }
+        public int LurchPowerValue      { get => lurchPowerValue;      set { lurchPowerValue = value; PropChgd(nameof(lurchPowerValue)); } }
+        public int ScanRPowerValue      { get => scanRPowerValue;      set { scanRPowerValue = value; PropChgd(nameof(scanRPowerValue)); } }
+        public int ScanLPowerValue      { get => scanLPowerValue;      set { scanLPowerValue = value; PropChgd(nameof(scanLPowerValue)); } }
+        public int ScanTimeValue        { get => scanTimeValue;        set { scanTimeValue   = value; PropChgd(nameof(scanTimeValue));   } }
+        public int LurchTimeValue       { get => lurchTimeValue;       set { lurchTimeValue  = value; PropChgd(nameof(lurchTimeValue));  } }
+        public int FramesPerSecondValue { get => framesPerSecondValue; set { framesPerSecondValue = value; PropChgd(nameof(framesPerSecondValue)); } }
+        public string CameraIdValue     { get => cameraIdValue;        set { cameraIdValue = value;   PropChgd(nameof(cameraIdValue)); } }
+
         [JsonIgnore]
         public string CameraStatus { get => cameraStatus;    set { cameraStatus    = value; PropChgd(nameof(cameraStatus));    } }
         private ObservableCollection<string> cameraItemsToRecognizeList = new();
@@ -72,5 +79,20 @@ namespace RobotControl.UI3
             File.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(this));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        protected bool SetProperty<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
+        {
+            if (!Equals(field, newValue))
+            {
+                field = newValue;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                return true;
+            }
+
+            return false;
+        }
+
+
+
     }
 }
