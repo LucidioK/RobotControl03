@@ -90,9 +90,8 @@ namespace RobotControl.ClassLibrary
             }
 
             if (flipY) { frame.Flip(FlipMode.Y); }
-            result.Bitmap = BitmapConverter.ToBitmap(frame);
-            var prediction = tinyYoloPredictionEngine.Predict(new ImageInputData { Image = result.Bitmap });
-            var labels = prediction.PredictedLabels;
+            result.Bitmap     = BitmapConverter.ToBitmap(frame);
+            float[] labels    = Predict(frame);
             var boundingBoxes = onnxOutputParser.ParseOutputs(labels);
             var filteredBoxes = onnxOutputParser.FilterBoundingBoxes(boundingBoxes, 5, 0.5f);
             if (filteredBoxes.Count == 0)
@@ -106,17 +105,22 @@ namespace RobotControl.ClassLibrary
                 return result;
             }
 
-            var highestConfidence = filteredBoxes.Select(b => b.Confidence).Max();
+            var highestConfidence    = filteredBoxes.Select(b => b.Confidence).Max();
             var highestConfidenceBox = filteredBoxes.First(b => b.Confidence == highestConfidence);
-            var bbdfb = BoundingBoxDeltaFromBitmap.FromBitmap(result.Bitmap, highestConfidenceBox);
-            var dimensions = HighlightDetectedObject(result.Bitmap, highestConfidenceBox, bbdfb);
-            result.HasData = true;
+            var bbdfb                = BoundingBoxDeltaFromBitmap.FromBitmap(result.Bitmap.Width, result.Bitmap.Height, highestConfidenceBox);
+            var dimensions           = HighlightDetectedObject(result.Bitmap, highestConfidenceBox, bbdfb);
+            result.HasData           = true;
+            result.Label             = dimensions + $", label={highestConfidenceBox.Label}";
 
             result.XDeltaProportionFromBitmapCenter = bbdfb.XDeltaProportionFromBitmapCenter;
-            result.Label = dimensions + $", label={highestConfidenceBox.Label}";
 
             return result;
         }
+
+        private float[] Predict(Mat frame) =>
+            tinyYoloPredictionEngine
+                .Predict(new ImageInputData { Image = MLImage.CreateFromStream(frame.ToMemoryStream()) })
+                .PredictedLabels;
 
         public async Task<ImageRecognitionFromCameraResult> GetAsync(string[] labelsOfObjectsToDetect) => await Task.Run(() => Get(labelsOfObjectsToDetect));
 
@@ -187,21 +191,21 @@ namespace RobotControl.ClassLibrary
             public float XDeltaProportionFromBitmapCenter { get => BitmapWidth > 0 ? XDeltaFromBitmapCenter / BitmapWidth : 0; }
             public float YDeltaProportionFromBitmapCenter { get => BitmapHeight > 0 ? YDeltaFromBitmapCenter / BitmapHeight : 0; }
 
-            public static BoundingBoxDeltaFromBitmap FromBitmap(Bitmap bitmap, BoundingBox box)
+            public static BoundingBoxDeltaFromBitmap FromBitmap(int width, int height, BoundingBox box)
             {
                 var bbdfb = new BoundingBoxDeltaFromBitmap()
                 {
-                    BitmapWidth = R0(bitmap.Width),
-                    BitmapHeight = R0(bitmap.Height),
-                    CorrX = (float)bitmap.Width / ImageSettings.imageWidth,
-                    CorrY = (float)bitmap.Height / ImageSettings.imageHeight,
+                    BitmapWidth = R0(width),
+                    BitmapHeight = R0(height),
+                    CorrX = (float)width / ImageSettings.imageWidth,
+                    CorrY = (float)height / ImageSettings.imageHeight,
                 };
 
-                var midXImg = bitmap.Width / 2;
+                var midXImg = width / 2;
                 var midXBox = (box.Dimensions.X * bbdfb.CorrX) + (box.Dimensions.Width * bbdfb.CorrX / 2);
                 bbdfb.XDeltaFromBitmapCenter = R1(midXBox - midXImg);
 
-                var midYImg = bitmap.Height / 2;
+                var midYImg = height / 2;
                 var midYBox = (box.Dimensions.Y * bbdfb.CorrY) + (box.Dimensions.Height * bbdfb.CorrY / 2);
                 bbdfb.YDeltaFromBitmapCenter = R1(midYBox - midYImg);
                 bbdfb.CorrX = R1(bbdfb.CorrX);
@@ -238,7 +242,7 @@ namespace RobotControl.ClassLibrary
         private class ImageInputData
         {
             [ImageType(ImageSettings.imageHeight, ImageSettings.imageWidth)]
-            public Bitmap Image { get; set; }
+            public MLImage Image { get; set; }
         }
 
         private interface IOnnxModel

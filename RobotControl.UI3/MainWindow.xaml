@@ -150,42 +150,7 @@
                     <Label Content="Here the robot performs initializations before running." />
                 </StackPanel>
             </TabItem>
-<!--            
-            <TabItem Header="Camera">
-                <StackPanel>
-                    <ComboBox x:Name="CameraItemsToRecognize" Margin="0,5,5,5" FontFamily="Consolas">
-                        <CheckBox Content="Aeroplane"   Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Bicycle"     Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Bird"        Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Boat"        Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Bottle"      Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Bus"         Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Car"         Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Cat"         Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Chair"       Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Cow"         Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Diningtable" Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Dog"         Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Horse"       Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Motorbike"   Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Person"      Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Pottedplant" Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Sheep"       Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Sofa"        Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Train"       Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                        <CheckBox Content="Tvmonitor"   Click="CameraItemsToRecognize_RoutedEventHandler" Checked="CameraItemsToRecognize_RoutedEventHandler" Unchecked="CameraItemsToRecognize_RoutedEventHandler"/>
-                    </ComboBox>
-                    <Button x:Name="CameraStartRecognition" Content="Start Recognition" Click="CameraStartRecognition_Click"  IsEnabled="False" FontFamily="Consolas" />
-                    <TextBlock x:Name="CameraStatusText" Text="." HorizontalAlignment="Left" Height="26" VerticalAlignment="Center" FontFamily="Consolas"/>
-                    <ClassLibrary:ImageRecogSyncControl x:Name="ImageRecognition" />
-                </StackPanel>
-            </TabItem>
-            <TabItem Header="Robot">
-                <StackPanel>
-                    <ClassLibrary:RobotCommunicationControl x:Name="RobotCommunication" />
-                </StackPanel>
-            </TabItem>
--->            
+  
         </TabControl>
 
     </Grid>
