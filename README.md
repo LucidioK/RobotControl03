@@ -32,5 +32,15 @@ You should first install the libraries that are used:
       * Adafruit LSM303 Accel
 1. Open the file SmartRobot02.ino from folder SmartRobot02, compile and upload to your robot.
 
+## To use the CUDA GPU:
 
+1. Follow this: https://learn.microsoft.com/en-us/dotnet/machine-learning/how-to-guides/install-gpu-model-builder
+1. Download https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.0.5/10.1_20201106/cudnn-10.1-windows10-x64-v8.0.5.39.zip
+1. Extract all files under cuda\bin and copy to %CUDA_PATH%\bin
+1. Install Anaconda https://docs.anaconda.com/anaconda/install/index.html
+1. Open an Anaconda command prompt, then run:
+  * `conda install -c "nvidia/label/cuda-11.8.0" libcublas`
+  * `copy %userprofile%\anaconda3\pkgs\libcublas-dev-11.9.2.110-0\bin\*.dll %CUDA_PATH%\bin`
+  * `conda install -c "nvidia/label/cuda-11.6.2" cuda-cudart-dev`
+  * `copy %userprofile%\anaconda3\pkgs\cuda-cudart-dev-11.6.55-0\bin\*.dlls %CUDA_PATH%\bin`
 

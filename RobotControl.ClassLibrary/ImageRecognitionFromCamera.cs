@@ -62,36 +62,25 @@ namespace RobotControl.ClassLibrary
         public ImageRecognitionFromCameraResult Get(string[] labelsOfObjectsToDetect)
         {
             var frame  = new Mat();
-            var result = new ImageRecognitionFromCameraResult
-            {
-                HasData = false,
-                ImageRecognitionFromCamera = this,
-            };
-            var beforeLock = DateTime.Now;
-            DateTime beforeRetrieveMat, afterRetrieveMat;
+            var result = GetEmptyImageRecognitionFromCameraResult();
+
             lock (retrieveFramesFromVideoCaptureThreadLock)
             {
-                beforeRetrieveMat = DateTime.Now;
                 frame = latestFrames[latestFramePosition];
-                afterRetrieveMat = DateTime.Now;
             }
 
             if (frame == null || frame.Empty())
             {
                 return result;
             }
-            var beforeFlipY = DateTime.Now;
+
             if (flipY) { frame.Flip(FlipMode.Y); }
-            var afterFlipY = DateTime.Now;
             result.Bitmap     = BitmapConverter.ToBitmap(frame);
-            var afterConvertingToBitmap = DateTime.Now;
             float[] labels    = Predict(frame);
-            var afterPredict = DateTime.Now;
             var filteredBoxes = onnxOutputParser
                                 .FilterBoundingBoxes(onnxOutputParser.ParseOutputs(labels), 5, 0.5f)
                                 .Where(b => labelsOfObjectsToDetect.Any(l => l.Equals(b.Label, StringComparison.InvariantCultureIgnoreCase)))
                                 .ToList();
-            var afterFiltering = DateTime.Now;
             if (filteredBoxes.Count == 0)
             {
                 return result;
@@ -100,19 +89,22 @@ namespace RobotControl.ClassLibrary
             var highestConfidence    = filteredBoxes.Select(b => b.Confidence).Max();
             var highestConfidenceBox = filteredBoxes.First(b => b.Confidence == highestConfidence);
             var bbdfb                = BoundingBoxDeltaFromBitmap.FromBitmap(result.Bitmap.Width, result.Bitmap.Height, highestConfidenceBox);
-            var beforeHighlightDetectedObject = DateTime.Now;
             var dimensions           = HighlightDetectedObject(result.Bitmap, highestConfidenceBox, bbdfb);
-            var afterHighlightDetectedObject = DateTime.Now;
             result.HasData           = true;
             result.Label             = dimensions + $", label={highestConfidenceBox.Label}";
-            printTimeSpans(new List<DateTime> { beforeLock, beforeRetrieveMat, afterRetrieveMat, beforeFlipY, afterFlipY, afterPredict, afterFiltering, beforeHighlightDetectedObject, afterHighlightDetectedObject },
-                           new List<string> { "beforeLock", "beforeRetrieveMat", "afterRetrieveMat", "beforeFlipY", "afterFlipY", "afterPredict", "afterFiltering", "beforeHighlightDetectedObject", "afterHighlightDetectedObject" });
             result.XDeltaProportionFromBitmapCenter = bbdfb.XDeltaProportionFromBitmapCenter;
 
             return result;
         }
 
-        private void printTimeSpans(IList<DateTime> times, IList<string> labels) 
+        private ImageRecognitionFromCameraResult GetEmptyImageRecognitionFromCameraResult() =>
+            new ImageRecognitionFromCameraResult
+            {
+                HasData = false,
+                ImageRecognitionFromCamera = this,
+            };
+
+        private void PrintTimeSpans(IList<DateTime> times, IList<string> labels) 
         {
             string s = "";
             for (var i = 1; i < times.Count; i++) 
@@ -143,7 +135,7 @@ namespace RobotControl.ClassLibrary
             opened       = videoCapture.Open(cameraId, VideoCaptureAPIs.FFMPEG);
             if (opened)
             {
-                retrieveFramesFromVideoCaptureThread = new Thread(retrieveFramesFromVideoCaptureThreadProc);
+                retrieveFramesFromVideoCaptureThread = new Thread(RetrieveFramesFromVideoCaptureThreadProc);
                 retrieveFramesFromVideoCaptureThread.Start();
             }
 
@@ -179,11 +171,11 @@ namespace RobotControl.ClassLibrary
             return $"x:{(int)x}, y:{(int)y}, w:{(int)w}, h:{(int)h}";
         }
 
-        private void retrieveFramesFromVideoCaptureThreadProc(object obj)
+        private void RetrieveFramesFromVideoCaptureThreadProc(object obj)
         {
             while (true)
             {
-                var nextFramePosition = (Interlocked.Read(ref latestFramePosition) + 1) % latestFrames.LongLength;
+                var nextFramePosition           = (Interlocked.Read(ref latestFramePosition) + 1) % latestFrames.LongLength;
                 latestFrames[nextFramePosition] = videoCapture.RetrieveMat();
                 Interlocked.Exchange(ref latestFramePosition, nextFramePosition);
             }

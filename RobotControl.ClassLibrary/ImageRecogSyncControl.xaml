@@ -11,7 +11,7 @@
 
     <Grid>
         <StackPanel>
-            <CheckBox x:Name="UseGPUChk" Content="Use GPU" IsChecked="False" />
+            <CheckBox x:Name="UseGPUChk" Content="Only Use GPU" IsChecked="False" />
             <Image Name="Image" Margin="5,5,5,5" Height="240" Width="320" HorizontalAlignment="Center" VerticalAlignment="Center" />
             <StackPanel Orientation="Horizontal">
                 <Label Content="Status:" />
