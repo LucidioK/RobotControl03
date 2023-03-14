@@ -62,8 +62,10 @@ namespace RobotControl.ClassLibrary
 
         protected virtual void InitializeImageRecognitionFromCameraProc(object obj)
         {
+            bool useGPU = false;
+            Dispatcher.Invoke(() => useGPU = (bool)UseGPUChk.IsChecked);
             Dispatcher.InvokeAsync(() => Status.Text = "Initializing Image Recognition.");
-            var irfc = ClassFactory.CreateImageRecognitionFromCamera();
+            var irfc = ClassFactory.CreateImageRecognitionFromCamera(useGPU);
             Dispatcher.InvokeAsync(() =>
             {
                 ImageRecognitionFromCamera = irfc;

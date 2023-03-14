@@ -19,15 +19,14 @@ namespace RobotControl.UI3
     {
         protected object motorLock = new object();
         private RobotControlData robotControlData;
-        public ImageRecognitionFromCameraUtilities utilities;
         protected Thread cameraWorkerThread;
         public MainWindow() : base()
         {
             InitializeComponent();
+            cameraWorkerThread = new Thread(CameraWorkerProc) { Priority = ThreadPriority.AboveNormal };
             robotControlData = new RobotControlData();
             robotControlData.InitializeWithJSONIfExists();
             DataContext = robotControlData;
-            utilities = new ImageRecognitionFromCameraUtilities();
             ImageRecognition.Start();
         }
 
@@ -48,7 +47,6 @@ namespace RobotControl.UI3
             else
             {
                 ImageRecognition.ImageRecognitionFromCamera.Open(robotControlData.CameraIdValue);
-                cameraWorkerThread = new Thread(CameraWorkerProc) { Priority = ThreadPriority.AboveNormal };
                 cameraWorkerThread.Start(this);
 
                 cameraButtonLabel = CameraStartRecognition?.Content?.ToString() ?? "None";
@@ -87,11 +85,14 @@ namespace RobotControl.UI3
         {
             if (thisWindow != null)
             {
-                var message = thisWindow.ImageRecognition.ImageRecognitionFromCameraInitialized ?
-                    (thisWindow.CameraStartRecognition.IsEnabled ? "Ready to Start Recognition " : "Please select what to find ")
-                    : "Waiting to initialize camera ";
-                thisWindow.robotControlData.CameraStatus = $"{message} {DateTime.Now.ToLongTimeString()}";
-                Thread.Sleep(500);
+                thisWindow.Dispatcher.Invoke(() =>
+                {
+                    var message = thisWindow.ImageRecognition.ImageRecognitionFromCameraInitialized ?
+                        (thisWindow.CameraStartRecognition.IsEnabled ? "Ready to Start Recognition " : "Please select what to find ")
+                        : "Waiting to initialize camera ";
+                    thisWindow.robotControlData.CameraStatus = $"{message} {DateTime.Now.ToLongTimeString()}";
+                    Thread.Sleep(500);
+                });
             }
         }
 
